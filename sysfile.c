@@ -71,16 +71,20 @@ int sys_dup2(void)
 {
   struct file *f;
   int oldfd, newfd;
-  if (argfd(0, &oldfd, &f) < 0 || argint(1, &newfd) < 0)
+
+  // Comprobamos si existe el descriptor de fichero viejo y ya está abierto
+  // Obtenemos el descriptor de fichero que nos han pasado por parámetro y, posteriormente comprobamos que es válido
+  if (argfd(0, &oldfd, &f) < 0 || argint(1, &newfd) < 0 || newfd < 0 || newfd >= NOFILE)
     return -1;
+
   if (oldfd == newfd)
     return newfd;
-  if (myproc()->ofile[newfd] != 0) // significa que está abierto
-    sys_close();
-  if ((newfd = fdalloc(f)) < 0)
-    return -1;
-  filedup(f);
 
+  if (myproc()->ofile[newfd] != 0)
+    fileclose(myproc()->ofile[newfd]);
+
+  myproc()->ofile[newfd] = f;
+  filedup(f);
   return newfd;
 }
 
