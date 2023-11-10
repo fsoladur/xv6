@@ -81,7 +81,10 @@ int sys_dup2(void)
     return newfd;
 
   if (myproc()->ofile[newfd] != 0)
+  {
+    myproc()->ofile[newfd] = 0;
     fileclose(myproc()->ofile[newfd]);
+  }
 
   myproc()->ofile[newfd] = f;
   filedup(f);
