@@ -71,6 +71,7 @@ int sys_dup2(void)
 {
   struct file *f;
   int oldfd, newfd;
+  struct proc *proc = myproc();
 
   // Comprobamos si existe el descriptor de fichero viejo y ya está abierto
   // Obtenemos el descriptor de fichero que nos han pasado por parámetro y, posteriormente comprobamos que es válido
@@ -82,8 +83,8 @@ int sys_dup2(void)
 
   if (myproc()->ofile[newfd] != 0)
   {
+    fileclose(proc->ofile[newfd]);
     myproc()->ofile[newfd] = 0;
-    fileclose(myproc()->ofile[newfd]);
   }
 
   myproc()->ofile[newfd] = f;
