@@ -91,7 +91,12 @@ trap(struct trapframe *tf)
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
-    myproc()->killed = 1;
+    myproc()->killed = 1; //NO hace falta matarlo ya que lo único que necesita es un nuevo marco
+
+    //solución. asignar la memoria que el proceso cree que tiene mapeada
+    // char *mem = kalloc();
+    //cuidado con el rcr2 porque no sabemos si es una dirección virtual o física 
+    //mappages(myproc()->pgdir,(char *)PGROUNDDOWN(rcr2()),PGSIZE,V2P(mem),PTE_W|PTE_U);
   }
 
   // Force process exit if it has been killed and is in user space.

@@ -45,8 +45,10 @@ int sys_sbrk(void)
   if (argint(0, &n) < 0)
     return -1;
   addr = myproc()->sz;
+  //ejercicio 1 boletin 3 reserva diferida
   if (growproc(n) < 0)
     return -1;
+  //myproc()->sz += n;
   return addr;
 }
 

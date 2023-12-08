@@ -8,6 +8,7 @@
 #include "spinlock.h"
 
 struct {
+  // HAY QUE AÑADIR EL PUNTERO AL ARRAY DE PRIORIDADES QUE DEBE SER MANEJADO CON EL LOCK ADQUIRIDO QUE NO SE OLVIDE
   struct spinlock lock;
   struct proc proc[NPROC];
 } ptable;
