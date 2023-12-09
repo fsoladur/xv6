@@ -74,5 +74,5 @@ int main(int argc, char *argv[])
   printf(fd, "Este mensaje debe salir por terminal.\n");
   close(fd);
 
-  exit();
+  exit(0);
 }
