@@ -87,10 +87,12 @@ trap(struct trapframe *tf)
       panic("trap");
     }
     // In user space, assume process misbehaved.
-    cprintf("pid %d %s: trap %d err %d on cpu %d "
+    if(tf->trapno != 0){
+      cprintf("pid %d %s: trap %d err %d on cpu %d "
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
+    }
     myproc()->killed = 1; //NO hace falta matarlo ya que lo único que necesita es un nuevo marco
 
     //solución. asignar la memoria que el proceso cree que tiene mapeada
