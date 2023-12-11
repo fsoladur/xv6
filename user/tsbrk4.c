@@ -6,7 +6,11 @@ main(int argc, char *argv[])
 {
   char* a = sbrk (15000);
 
-  fork();
+  int pid = fork();
+
+  if(pid != 0){
+    wait(NULL);
+  }
 
   a[500] = 1;
 
@@ -34,7 +38,10 @@ main(int argc, char *argv[])
 
   a=sbrk(1024*4096*2);
 
-  fork();
+  int pid_2 = fork();
+
+  if(pid_2 != 0)
+    wait(NULL);
 
   a[600*4096*2] = 1;
 
