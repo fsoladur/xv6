@@ -45,17 +45,22 @@ int sys_getpid(void)
 
 int sys_sbrk(void)
 {
-  int addr;
+  int sz;
   int n;
 
   if (argint(0, &n) < 0)
     return -1;
-  addr = myproc()->sz;
+  sz = myproc()->sz;
   //ejercicio 1 boletin 3 reserva diferida
-  if (growproc(n) < 0)
-    return -1;
-  //myproc()->sz += n;
-  return addr;
+  if (n < 0) {
+    if (deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz+n) == 0)
+      return -1;
+    lcr3(V2P(myproc()->pgdir));  // Invalidate TLB.
+    // Hacemos exactamente lo mismo que en growproc pero a este nivel sin necesidad de llamar al procedimiento
+    // Cuando salte el trap se encargará de gestionar el caso de que el argumento que se le pase sea negativo
+  }
+  myproc()->sz += n;
+  return sz;
 }
 
 int sys_sleep(void)

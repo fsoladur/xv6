@@ -39,9 +39,11 @@ struct proc {
   uint sz;                     // Size of process memory (bytes)
   pde_t* pgdir;                // Page table
   char *kstack;                // Bottom of kernel stack for this process
+  uint ustack;                 // Bottom of user stack for this process
+                               // Puesto que necesitamos saber dónde se ubica la página de guarda para cada proceso podemos almacenar el final de su pila
   enum procstate state;        // Process state
   int pid;                     // Process ID
-  int status;
+  int status;                  // Exit status process
   struct proc *parent;         // Parent process
   struct trapframe *tf;        // Trap frame for current syscall
   struct context *context;     // swtch() here to run process

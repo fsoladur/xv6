@@ -63,10 +63,14 @@ exec(char *path, char **argv)
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
   sz = PGROUNDUP(sz);
+  // sz inicialmente tiene la direcciónd de comienzo de la página de guarda, es por ello que le tenemos que sumar una página para obtener
+  // la dirección de comienzo de la pila del usuario en el espacio del usuario
+  curproc->ustack = sz + PGSIZE;
   if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
     goto bad;
   clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
   sp = sz;
+  //añadimos esta linea de código para saber dónde comienza la pila del usuario
 
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {

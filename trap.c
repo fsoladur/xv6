@@ -77,7 +77,46 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
+  case T_DIVIDE:
+    myproc()->killed = 1;
+    break;
+  case T_PGFLT:
+    //NO hace falta matarlo ya que lo único que necesita es un nuevo marco
+    // if(myproc() == 0 || (tf->cs&3) == 0){
+    //   // In kernel, it must be our mistake.
+    //   cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
+    //           tf->trapno, cpuid(), tf->eip, rcr2());
+    //   panic("trap");
+    // }
 
+    //El proceso está intentando acceder a una zona de memoria que no ha reservado
+    if(myproc()->sz < rcr2()){
+      cprintf("T_PGFLT attempted access to a non-reserved memory area\n");
+      myproc()->killed = 1;
+    }
+
+    if(PGROUNDDOWN(rcr2()) <= myproc()->ustack){
+      cprintf("T_PGFLT attempted access to guard page\n");
+      myproc()->killed = 1;
+    }
+
+    char * mem;
+    if((mem = kalloc()) == 0){
+      cprintf("T_PGFLT out of memory\n");
+      myproc()->killed = 1;
+    }
+    else{
+      memset(mem,0,PGSIZE);
+      if(mappages(myproc()->pgdir,(char *)PGROUNDDOWN(rcr2()),PGSIZE,V2P(mem),PTE_W|PTE_U) < 0){
+        cprintf("T PGFLT mapping fail\n");
+        kfree(mem);
+        myproc()->killed = 1;
+      }
+    }
+    //Hacemos lo que haríamos precisamente en growproc pero adaptándolo para el caso en el que los procesos crecen
+    lcr3(V2P(myproc()->pgdir));
+    break;
+  
   //PAGEBREAK: 13
   default:
     if(myproc() == 0 || (tf->cs&3) == 0){
@@ -87,18 +126,11 @@ trap(struct trapframe *tf)
       panic("trap");
     }
     // In user space, assume process misbehaved.
-    if(tf->trapno != 0){
-      cprintf("pid %d %s: trap %d err %d on cpu %d "
-            "eip 0x%x addr 0x%x--kill proc\n",
-            myproc()->pid, myproc()->name, tf->trapno,
-            tf->err, cpuid(), tf->eip, rcr2());
-    }
-    myproc()->killed = 1; //NO hace falta matarlo ya que lo único que necesita es un nuevo marco
-
-    //solución. asignar la memoria que el proceso cree que tiene mapeada
-    // char *mem = kalloc();
-    //cuidado con el rcr2 porque no sabemos si es una dirección virtual o física 
-    //mappages(myproc()->pgdir,(char *)PGROUNDDOWN(rcr2()),PGSIZE,V2P(mem),PTE_W|PTE_U);
+    cprintf("pid %d %s: trap %d err %d on cpu %d "
+          "eip 0x%x addr 0x%x--kill proc\n",
+          myproc()->pid, myproc()->name, tf->trapno,
+          tf->err, cpuid(), tf->eip, rcr2());
+    myproc()->killed = 1; 
   }
 
   // Force process exit if it has been killed and is in user space.
