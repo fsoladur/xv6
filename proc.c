@@ -293,7 +293,6 @@ wait(int* status)
         pid = p->pid;
         if(status != NULL)
           *status = p->status;
-        p->status=0;
         kfree(p->kstack);
         p->kstack = 0;
         freevm(p->pgdir, 0); // User zone deleted before
