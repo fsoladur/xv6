@@ -40,7 +40,9 @@ struct proc {
   pde_t* pgdir;                // Page table
   char *kstack;                // Bottom of kernel stack for this process
   uint ustack;                 // Bottom of user stack for this process
-                               // Puesto que necesitamos saber dónde se ubica la página de guarda para cada proceso podemos almacenar el final de su pila
+  // Puesto que necesitamos saber dónde se ubica la página de guarda para cada proceso podemos almacenar el final de su pila
+  uint priority;
+  struct proc *next;
   enum procstate state;        // Process state
   int pid;                     // Process ID
   int status;                  // Exit status process

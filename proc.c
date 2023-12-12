@@ -6,9 +6,11 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "priority_queue.h"
 
 struct {
   // HAY QUE AÑADIR EL PUNTERO AL ARRAY DE PRIORIDADES QUE DEBE SER MANEJADO CON EL LOCK ADQUIRIDO QUE NO SE OLVIDE
+  proc_priority priority_queue[N_queue];
   struct spinlock lock;
   struct proc proc[NPROC];
 } ptable;
