@@ -40,7 +40,16 @@ struct proc *extract(proc_priority *priority_queue)
         if (priority_queue[i].first != NULL)
         {
             extracted = priority_queue[i].first;
-            priority_queue[i].first = extracted->next;
+            if (priority_queue[i].first != priority_queue[i].last)
+            {
+                priority_queue[i].first = extracted->next;
+            }
+            else
+            {
+
+                priority_queue[i].first = NULL;
+                priority_queue[i].last = NULL;
+            }
             extracted->next = NULL;
             return extracted;
         }
