@@ -64,6 +64,7 @@
     "x86.h": "c",
     "proc.h": "c",
     "spinlock.h": "c",
-    "param.h": "c"
+    "param.h": "c",
+    "user.h": "c"
   }
 }

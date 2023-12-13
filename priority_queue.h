@@ -78,4 +78,45 @@ struct proc *extract(proc_priority *priority_queue)
 
     return NULL;
 }
+
+struct proc *search_extract(int pid, proc_priority *priority_queue)
+{
+    struct proc *current, *prev;
+    for (int i = 0; i < N_PRIORITIES; i++)
+    {
+        prev = NULL;
+        current = priority_queue[i].first;
+        while (current != NULL)
+        {
+            if (current->pid == pid)
+            {
+                // Encontramos el proceso con el PID especificado
+                if (prev != NULL)
+                {
+                    // El proceso no está al principio de la cola
+                    prev->next = current->next;
+                    if (current == priority_queue[i].last)
+                    {
+                        priority_queue[i].last = prev;
+                    }
+                }
+                else
+                {
+                    // El proceso está al principio de la cola
+                    priority_queue[i].first = current->next;
+                    if (current == priority_queue[i].last)
+                    {
+                        priority_queue[i].last = NULL;
+                    }
+                }
+                current->next = NULL;
+                return current; // Devolvemos el proceso encontrado y eliminado
+            }
+
+            prev = current;
+            current = current->next;
+        }
+    }
+    return NULL;
+}
 #endif

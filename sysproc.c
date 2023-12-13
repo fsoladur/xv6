@@ -105,3 +105,20 @@ int sys_date(void)
   cmostime(d);
   return 0;
 }
+
+int sys_getprio(void)
+{
+  int pid;
+  if (argint(0, &pid) < 0)
+    return -1;
+  return getprio(pid);
+}
+
+int sys_setprio(void)
+{
+  int pid;
+  unsigned int new_priority;
+  if (argint(0, &pid) < 0 || argint(1, (int *)&new_priority) < 0)
+    return -1;
+  return setprio(pid, new_priority);
+}

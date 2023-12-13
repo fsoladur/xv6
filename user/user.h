@@ -2,6 +2,9 @@
 #define WEXITSTATUS(status) (((status) & 0xff00 ) >> 8)
 #define WIFSIGNALED(status) (((status) & 0x7f) != 0)
 #define WEXITTRAP(status) (((status) & 0x7f) - 1)
+#define LOWEST_PRIO 9
+#define NORM_PRIO 5
+#define HIGHEST_PRIO 0
 
 struct stat;
 struct rtcdate;
@@ -30,6 +33,8 @@ extern int sleep(int);
 extern int uptime(void);
 extern int date(struct rtcdate *);
 extern int dup2(int, int);
+extern int getprio(int);
+extern int setprio(int, unsigned int);
 // ulib.c
 extern int stat(const char *, struct stat *);
 extern char *strcpy(char *, const char *);

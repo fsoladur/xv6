@@ -341,6 +341,63 @@ int wait(int *status)
   }
 }
 
+int getprio(int pid)
+{
+  int i = 0, prio = -1;
+  acquire(&ptable.lock);
+  while (i < NPROC && ptable.proc[i].pid != pid)
+  {
+    i++;
+  }
+  if (i != NPROC)
+  {
+    prio = ptable.proc[i].priority;
+  }
+  release(&ptable.lock);
+  return prio;
+}
+
+int setprio(int pid, unsigned int proc_prio)
+{
+  struct proc *proc;
+  int i = 0;
+  acquire(&ptable.lock);
+  while (i < NPROC && ptable.proc[i].pid != pid)
+  {
+    i++;
+  }
+  if (i != NPROC)
+  {
+    proc = &ptable.proc[i];
+
+    if (proc->status == RUNNABLE)
+    {
+      if (proc->priority != proc_prio)
+      {
+        proc = search_extract(proc->pid, ptable.priority_queue);
+        if (proc == NULL)
+        {
+          panic("A runnable process it is not in the queue");
+        }
+        proc->priority = proc_prio;
+        insert(proc, ptable.priority_queue);
+      }
+      else
+      {
+        return proc->priority;
+      }
+    }
+    else
+    {
+      proc->priority = proc_prio;
+    }
+    release(&ptable.lock);
+    return proc->priority;
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
 // PAGEBREAK: 42
 //  Per-CPU process scheduler.
 //  Each CPU calls scheduler() after setting itself up.
@@ -365,21 +422,23 @@ void scheduler(void)
 
     while ((p = extract(ptable.priority_queue)))
     {
-      if (p == NULL)
-        continue;
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+      if (p != NULL)
+      {
 
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
+        // Switch to chosen process.  It is the process's job
+        // to release ptable.lock and then reacquire it
+        // before jumping back to us.
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+
+        // Process is done running for now.
+        // It should have changed its p->state before coming back.
+        c->proc = 0;
+      }
     }
 
     release(&ptable.lock);
@@ -467,6 +526,14 @@ void sleep(void *chan, struct spinlock *lk)
   {                        // DOC: sleeplock0
     acquire(&ptable.lock); // DOC: sleeplock1
     release(lk);
+  }
+
+  if (p->state == RUNNABLE)
+  {
+    if (search_extract(p->pid, ptable.priority_queue) == NULL)
+    {
+      panic("A runnable process it is not in the queue");
+    }
   }
   // Go to sleep.
   p->chan = chan;
