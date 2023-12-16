@@ -95,25 +95,27 @@ trap(struct trapframe *tf)
       myproc()->killed = 1;
     }
 
-    if(PGROUNDDOWN(rcr2()) <= myproc()->ustack){
+    //Comprobamos que el proceso no intenta acceder a la página de guarda
+    if(PGROUNDDOWN(rcr2()) < myproc()->ustack){
       cprintf("T_PGFLT attempted access to guard page\n");
       myproc()->killed = 1;
     }
 
     char * mem;
-    if((mem = kalloc()) == 0){
+    
+    if((mem = kalloc()) == 0){ //si falla kalloc
       cprintf("T_PGFLT out of memory\n");
       myproc()->killed = 1;
     }
     else{
       memset(mem,0,PGSIZE);
       if(mappages(myproc()->pgdir,(char *)PGROUNDDOWN(rcr2()),PGSIZE,V2P(mem),PTE_W|PTE_U) < 0){
-        cprintf("T PGFLT mapping fail\n");
+        cprintf("T PGFLT mapping fail\n"); 
         kfree(mem);
         myproc()->killed = 1;
       }
     }
-    //Hacemos lo que haríamos precisamente en growproc pero adaptándolo para el caso en el que los procesos crecen
+    //Hacemos lo que haríamos precisamente en growproc pero adaptándolo para el caso en el que los procesos crecen limpiando el TLB.
     lcr3(V2P(myproc()->pgdir));
     break;
   
